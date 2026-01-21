@@ -1,21 +1,35 @@
-let history = [];
-let redoStack = [];
+const rooms = {};
 
-function add(segment) {
-  history.push(segment);
-  redoStack = [];
+function get(room) {
+  if (!rooms[room]) {
+    rooms[room] = { history: [], redoStack: [] };
+  }
+  return rooms[room].history;
 }
 
-function undo() {
-  if (!history.length) return history;
-  redoStack.push(history.pop());
-  return history;
+function add(room, data) {
+  if (!rooms[room]) {
+    rooms[room] = { history: [], redoStack: [] };
+  }
+  rooms[room].history.push(data);
+  rooms[room].redoStack = [];
 }
 
-function redo() {
-  if (!redoStack.length) return history;
-  history.push(redoStack.pop());
-  return history;
+function undo(room) {
+  if (!rooms[room] || rooms[room].history.length === 0) return;
+  const item = rooms[room].history.pop();
+  rooms[room].redoStack.push(item);
 }
 
-module.exports = { add, undo, redo };
+function redo(room) {
+  if (!rooms[room] || rooms[room].redoStack.length === 0) return;
+  const item = rooms[room].redoStack.pop();
+  rooms[room].history.push(item);
+}
+
+module.exports = {
+  get,
+  add,
+  undo,
+  redo
+};

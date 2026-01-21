@@ -8,7 +8,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// serve frontend correctly (Express 5 safe)
+// store users per room
+const users = {};
+
+// serve frontend (Express 5 safe)
 app.use(express.static(path.join(__dirname, "../client")));
 
 // catch-all for SPA routing (rooms)
@@ -21,7 +24,16 @@ io.on("connection", (socket) => {
   const room = socket.handshake.query.room || "main";
   socket.join(room);
 
+  if (!users[room]) users[room] = {};
+
+  // assign random color
+  const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  users[room][socket.id] = color;
+
   console.log("User connected:", socket.id, "Room:", room);
+
+  // send users in this room
+  io.to(room).emit("users", users[room]);
 
   // send existing canvas to new user
   socket.emit("redraw", drawingState.get(room));
@@ -48,12 +60,14 @@ io.on("connection", (socket) => {
   socket.on("cursor", (data) => {
     socket.to(room).emit("cursor", {
       id: socket.id,
+      color,
       ...data
     });
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id, "Room:", room);
+    delete users[room][socket.id];
+    io.to(room).emit("users", users[room]);
     socket.leave(room);
   });
 });

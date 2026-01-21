@@ -1,59 +1,64 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-
 const drawingState = require("./drawing-state");
-const rooms = require("./rooms");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// serve frontend
 app.use(express.static("client"));
 
-// modern Express catch-all (works in v5)
+// catch-all for SPA routing (rooms)
 app.use((req, res) => {
   res.sendFile(__dirname + "/../client/index.html");
 });
 
-
-const users = {};
-const colors = ["red", "blue", "green", "purple", "orange"];
-
+// socket logic
 io.on("connection", (socket) => {
-  const room = socket.handshake.query.room || "default";
-  rooms.join(socket, room);
+  // get room from URL
+  const room = socket.handshake.query.room || "main";
+  socket.join(room);
 
-  users[socket.id] = colors[Math.floor(Math.random() * colors.length)];
-  io.to(room).emit("users", users);
+  console.log("User connected:", socket.id, "Room:", room);
 
-  socket.on("draw", (segment) => {
-    drawingState.add(segment);
-    socket.broadcast.to(room).emit("draw", segment);
+  // send existing canvas state to new user
+  socket.emit("redraw", drawingState.get(room));
+
+  // drawing
+  socket.on("draw", (data) => {
+    drawingState.add(room, data);
+    socket.to(room).emit("draw", data);
   });
 
+  // undo
   socket.on("undo", () => {
-    io.to(room).emit("redraw", drawingState.undo());
+    drawingState.undo(room);
+    io.to(room).emit("redraw", drawingState.get(room));
   });
 
+  // redo
   socket.on("redo", () => {
-    io.to(room).emit("redraw", drawingState.redo());
+    drawingState.redo(room);
+    io.to(room).emit("redraw", drawingState.get(room));
   });
 
+  // cursor
   socket.on("cursor", (data) => {
-    socket.broadcast.to(room).emit("cursor", {
+    socket.to(room).emit("cursor", {
       id: socket.id,
-      color: users[socket.id],
       ...data
     });
   });
 
   socket.on("disconnect", () => {
-    delete users[socket.id];
-    io.to(room).emit("users", users);
+    console.log("User disconnected:", socket.id, "Room:", room);
+    socket.leave(room);
   });
 });
 
+// start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);

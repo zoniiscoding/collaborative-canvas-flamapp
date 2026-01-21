@@ -92,13 +92,25 @@ canvas.addEventListener("mouseup", (e) => {
   const y = e.clientY - rect.top;
 
   if (tool === "rect") {
-    ctx.strokeRect(
-      startPoint.x,
-      startPoint.y,
-      x - startPoint.x,
-      y - startPoint.y
-    );
-  }
+  const rectOp = {
+    type: "rect",
+    x: startPoint.x,
+    y: startPoint.y,
+    w: x - startPoint.x,
+    h: y - startPoint.y,
+    color: currentColor,
+    width: currentSize
+  };
+
+  // draw locally
+  ctx.strokeStyle = currentColor;
+  ctx.lineWidth = currentSize;
+  ctx.strokeRect(rectOp.x, rectOp.y, rectOp.w, rectOp.h);
+
+  // sync
+  socket.emit("draw", rectOp);
+}
+
 
   if (tool === "text") {
     const input = document.createElement("input");

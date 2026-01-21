@@ -4,25 +4,38 @@ export function setupSocket(socket, ctx, usersDiv) {
   const cursors = {};
 
   socket.on("draw", (op) => {
-    if (op.type === "text") {
-      ctx.fillStyle = op.color;
-      ctx.fillText(op.text, op.x, op.y);
-    } else {
-      drawSegment(ctx, op);
-    }
-  });
+  if (op.type === "text") {
+    ctx.fillStyle = op.color;
+    ctx.fillText(op.text, op.x, op.y);
+  } 
+  else if (op.type === "rect") {
+    ctx.strokeStyle = op.color;
+    ctx.lineWidth = op.width;
+    ctx.strokeRect(op.x, op.y, op.w, op.h);
+  }
+  else {
+    drawSegment(ctx, op);
+  }
+});
 
   socket.on("redraw", (history) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     history.forEach(op => {
-      if (op.type === "text") {
-        ctx.fillStyle = op.color;
-        ctx.fillText(op.text, op.x, op.y);
-      } else {
-        drawSegment(ctx, op);
-      }
-    });
+  if (op.type === "text") {
+    ctx.fillStyle = op.color;
+    ctx.fillText(op.text, op.x, op.y);
+  } 
+  else if (op.type === "rect") {
+    ctx.strokeStyle = op.color;
+    ctx.lineWidth = op.width;
+    ctx.strokeRect(op.x, op.y, op.w, op.h);
+  }
+  else {
+    drawSegment(ctx, op);
+  }
+});
+
   });
 
   socket.on("cursor", ({ id, x, y, color }) => {

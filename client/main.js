@@ -47,10 +47,18 @@ setActiveTool("brush");
 colorPicker.onchange = e => currentColor = e.target.value;
 brushSize.oninput = e => currentSize = e.target.value;
 
-brushBtn.onclick = () => { tool = "free"; setActiveTool("brush"); };
-eraserBtn.onclick = () => { tool = "free"; setActiveTool("eraser"); };
-rectBtn.onclick = () => tool = "rect";
-textBtn.onclick = () => tool = "text";
+function setToolActive(btn) {
+  [brushBtn, eraserBtn, rectBtn, textBtn].forEach(b => 
+    b.classList.remove("active")
+  );
+  btn.classList.add("active");
+}
+
+brushBtn.onclick = () => { tool = "free"; setToolActive(brushBtn); };
+eraserBtn.onclick = () => { tool = "free"; setToolActive(eraserBtn); };
+rectBtn.onclick = () => { tool = "rect"; setToolActive(rectBtn); };
+textBtn.onclick = () => { tool = "text"; setToolActive(textBtn); };
+
 
 undoBtn.onclick = () => socket.emit("undo");
 redoBtn.onclick = () => socket.emit("redo");
@@ -220,7 +228,68 @@ canvas.addEventListener("touchmove", (e) => {
 });
 
 
-canvas.addEventListener("touchend", () => {
+canvas.addEventListener("touchend", (e) => {
   drawing = false;
+
+  const rect = canvas.getBoundingClientRect();
+  const t = e.changedTouches[0];
+  const x = t.clientX - rect.left;
+  const y = t.clientY - rect.top;
+
+  if (tool === "rect") {
+    const rectOp = {
+      type: "rect",
+      x: startPoint.x,
+      y: startPoint.y,
+      w: x - startPoint.x,
+      h: y - startPoint.y,
+      color: currentColor,
+      width: currentSize
+    };
+
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = currentSize;
+    ctx.strokeRect(rectOp.x, rectOp.y, rectOp.w, rectOp.h);
+
+    socket.emit("draw", rectOp);
+  }
+
+  if (tool === "text") {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = "Type and press Enter";
+
+    input.style.position = "absolute";
+    input.style.left = (x + canvas.offsetLeft) + "px";
+    input.style.top = (y + canvas.offsetTop) + "px";
+    input.style.fontSize = "16px";
+    input.style.border = "1px solid #aaa";
+    input.style.padding = "2px";
+    input.style.zIndex = 2000;
+
+    document.body.appendChild(input);
+    input.focus();
+
+    input.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter") {
+        const txt = input.value;
+        document.body.removeChild(input);
+        if (!txt) return;
+
+        const textOp = {
+          type: "text",
+          text: txt,
+          x,
+          y,
+          color: currentColor
+        };
+
+        ctx.fillStyle = currentColor;
+        ctx.fillText(textOp.text, textOp.x, textOp.y);
+        socket.emit("draw", textOp);
+      }
+    });
+  }
+
   prevPoint = null;
 });

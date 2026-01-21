@@ -54,8 +54,8 @@ function setToolActive(btn) {
   btn.classList.add("active");
 }
 
-brushBtn.onclick = () => { tool = "free"; setToolActive(brushBtn); };
-eraserBtn.onclick = () => { tool = "free"; setToolActive(eraserBtn); };
+brushBtn.onclick = () => { tool = "free"; mode = "brush"; setToolActive(brushBtn); };
+eraserBtn.onclick = () => { tool = "free"; mode = "eraser"; setToolActive(eraserBtn); };
 rectBtn.onclick = () => { tool = "rect"; setToolActive(rectBtn); };
 textBtn.onclick = () => { tool = "text"; setToolActive(textBtn); };
 

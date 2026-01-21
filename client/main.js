@@ -204,7 +204,8 @@ canvas.addEventListener("touchstart", (e) => {
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();
-  if (!drawing || !prevPoint) return;
+  if (!drawing || !prevPoint || tool !== "free") return;
+
 
   const rect = canvas.getBoundingClientRect();
   const t = e.touches[0];

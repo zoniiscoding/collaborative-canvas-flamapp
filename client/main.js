@@ -186,6 +186,11 @@ canvas.addEventListener("touchmove", (e) => {
   const rect = canvas.getBoundingClientRect();
   const t = e.touches[0];
 
+  socket.emit("cursor", {
+    x: t.clientX - rect.left,
+    y: t.clientY - rect.top
+  });
+
   const segment = {
     from: prevPoint,
     to: {
@@ -201,6 +206,7 @@ canvas.addEventListener("touchmove", (e) => {
   socket.emit("draw", segment);
   prevPoint = segment.to;
 });
+
 
 canvas.addEventListener("touchend", () => {
   drawing = false;

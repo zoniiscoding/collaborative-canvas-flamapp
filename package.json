@@ -1,0 +1,24 @@
+{
+  "name": "collaborative-canvas-flamapp",
+  "version": "1.0.0",
+  "description": "Real-time collaborative drawing app (Flamapp)",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "keywords": [
+    "collaboration",
+    "canvas",
+    "realtime",
+    "socket.io",
+    "drawing",
+    "flamapp"
+  ],
+  "author": "Zoni",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}

@@ -1,0 +1,108 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f4f6fb;
+}
+
+/* ===== Toolbar ===== */
+#toolbar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 180px;
+}
+
+/* Tool row */
+#toolbar > * {
+  width: 100%;
+}
+
+/* Inputs */
+input[type="color"] {
+  height: 36px;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  cursor: pointer;
+}
+
+/* Buttons */
+button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #f0f1f6;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background: #e2e4ee;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* Active tool */
+button.active {
+  background: #4f6ef7;
+  color: white;
+  font-weight: 600;
+}
+
+/* Users panel */
+#users {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.user-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+/* Canvas */
+canvas {
+  margin-top: 100px;
+  display: block;
+  background: white;
+}
+
+/* Cursor dots */
+.cursor {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.8;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+  transform: translate(-50%, -50%);
+}

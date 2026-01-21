@@ -1,29 +1,29 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
 const drawingState = require("./drawing-state");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// serve frontend
-app.use(express.static("client"));
+// serve frontend correctly (Express 5 safe)
+app.use(express.static(path.join(__dirname, "../client")));
 
 // catch-all for SPA routing (rooms)
 app.use((req, res) => {
-  res.sendFile(__dirname + "/../client/index.html");
+  res.sendFile(path.join(__dirname, "../client/index.html"));
 });
 
 // socket logic
 io.on("connection", (socket) => {
-  // get room from URL
   const room = socket.handshake.query.room || "main";
   socket.join(room);
 
   console.log("User connected:", socket.id, "Room:", room);
 
-  // send existing canvas state to new user
+  // send existing canvas to new user
   socket.emit("redraw", drawingState.get(room));
 
   // drawing
@@ -58,7 +58,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// start server
+// start server (Render compatible)
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);

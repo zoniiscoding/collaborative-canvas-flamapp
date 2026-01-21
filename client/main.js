@@ -192,12 +192,15 @@ canvas.addEventListener("mousemove", (e) => {
 canvas.addEventListener("touchstart", (e) => {
   const rect = canvas.getBoundingClientRect();
   const t = e.touches[0];
+
+  const x = t.clientX - rect.left;
+  const y = t.clientY - rect.top;
+
   drawing = true;
-  prevPoint = {
-    x: t.clientX - rect.left,
-    y: t.clientY - rect.top
-  };
+  prevPoint = { x, y };
+  startPoint = { x, y };   // ← THIS LINE was missing
 });
+
 
 canvas.addEventListener("touchmove", (e) => {
   e.preventDefault();

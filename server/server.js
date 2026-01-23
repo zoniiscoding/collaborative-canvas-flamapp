@@ -8,55 +8,62 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// store users per room
+// store connected users per room
+// structure: { roomName: { socketId: color } }
 const users = {};
 
-// serve frontend (Express 5 safe)
+// serve frontend files (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, "../client")));
 
-// catch-all for SPA routing (rooms)
+// fallback route so /room1, /room2 etc. all load index.html
+// handled on frontend using URL
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "../client/index.html"));
 });
 
-// socket logic
+// socket connection handler
 io.on("connection", (socket) => {
+
+  // get room name from query, default to main
   const room = socket.handshake.query.room || "main";
   socket.join(room);
 
   if (!users[room]) users[room] = {};
 
-  // assign random color
+  // assign a random color to each user
   const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
   users[room][socket.id] = color;
 
   console.log("User connected:", socket.id, "Room:", room);
 
-  // send users in this room
+  // send updated user list to everyone in the room
   io.to(room).emit("users", users[room]);
 
-  // send existing canvas to new user
+  // send existing drawing history to new user
   socket.emit("redraw", drawingState.get(room));
 
-  // drawing
+  // receive drawing operation from a user
   socket.on("draw", (data) => {
+    // store operation in server state
     drawingState.add(room, data);
+
+    // broadcast to others in the same room
     socket.to(room).emit("draw", data);
   });
 
-  // undo
+  // global undo (affects everyone in room)
   socket.on("undo", () => {
     drawingState.undo(room);
     io.to(room).emit("redraw", drawingState.get(room));
   });
 
-  // redo
+  // global redo
   socket.on("redo", () => {
     drawingState.redo(room);
     io.to(room).emit("redraw", drawingState.get(room));
   });
 
-  // cursor
+  // broadcast cursor movement to others
   socket.on("cursor", (data) => {
     socket.to(room).emit("cursor", {
       id: socket.id,
@@ -65,6 +72,7 @@ io.on("connection", (socket) => {
     });
   });
 
+  // cleanup when user disconnects
   socket.on("disconnect", () => {
     delete users[room][socket.id];
     io.to(room).emit("users", users[room]);
@@ -72,7 +80,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// start server (Render compatible)
+// start server (works locally and on Render)
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log("Server running on port", PORT);

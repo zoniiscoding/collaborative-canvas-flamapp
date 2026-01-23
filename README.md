@@ -29,20 +29,20 @@ It supports multiple rooms, global undo/redo, real-time cursors, and works acros
 
 ## Setup Instructions
 
-Clone repository
+1. Clone repository
 
 git clone https://github.com/zoniiscoding/collaborative-canvas-flamapp
 cd collaborative-canvas  
 
-Install dependencies
+2. Install dependencies
 
 npm install  
 
-Start server
+3. Start server
 
 npm start  
 
-Open in browser
+4. Open in browser
 
 http://localhost:3000  
 

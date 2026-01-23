@@ -11,17 +11,10 @@ Broadcast to other clients in the same room
 Replayed on remote canvases  
 
 ---
+## Data Flow Diagram
 
-## Data Flow
+![System Data Flow Diagram](docs/dfd.png)
 
-User action → Client → Server → Other clients
-
-Example:
-
-socket.emit("draw", operation)  
-socket.to(room).emit("draw", operation)  
-
----
 
 ## WebSocket Protocol
 
